@@ -1,9 +1,15 @@
 [package]
 name = "tribler"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Vitaly _Vi Shukela <vi0oss@gmail.com>"]
 edition = "2018"
 
 [dependencies]
 structopt = { version = "0.2.15", optional = true }
 reqwest = "0.9.12"
+serde = "1.0.89"
+serde_derive = "1.0.89"
+
+[features]
+default = ["bin"]
+bin = ["structopt"]
