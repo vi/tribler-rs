@@ -1,0 +1,9 @@
+[package]
+name = "tribler"
+version = "0.1.0"
+authors = ["Vitaly _Vi Shukela <vi0oss@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+structopt = { version = "0.2.15", optional = true }
+reqwest = "0.9.12"
