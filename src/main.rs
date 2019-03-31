@@ -4,6 +4,7 @@ extern crate byte_unit;
 
 use structopt::StructOpt;
 
+use byte_unit::Byte;
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -29,6 +30,14 @@ enum Search {
         /// Prefix to complete
         prefix: String,
     },
+    /// Start new search
+    Begin {
+        /// Text to search in the torrent database for
+        query: String,
+
+        #[structopt(long="uuid",default_value="e09774f87c32414cad817e6d643a7235")]
+        uuid: String,
+    }
 }
 
 
@@ -42,20 +51,37 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
             Downloads::List{} => {
                 let ds = trib.get_downloads()?;
                 for d in ds {
-                    let s = byte_unit::Byte::from_bytes(d.size.into());
-                    println!("{:>11} {:>6}%  {}",
+                    let s = Byte::from_bytes(d.size.into());
+                    println!(
+                        "{:>11} {:>6}%  {}",
                         s.get_appropriate_unit(true).to_string(),
                         d.progress * 100.0,
                         d.name,
                     );
                 }
-            }
+            },
         },
         Opt::Search(cmd) => match cmd {
             Search::Completions { prefix } => {
                 let cs = trib.get_search_completions(&prefix)?;
                 for i in cs {
                     println!("{}", i);
+                }
+            },
+            Search::Begin { query, uuid } => {
+                let q = tribler::SearchQuery::new(
+                    uuid,
+                    query,
+                );
+                let srs = trib.begin_search(q)?;
+                for sr in srs {
+                    let sz = Byte::from_bytes(sr.size.into());
+                    println!(
+                        "{:>11} {}   magnet:?xt=urn:btih:{}", 
+                        sz.get_appropriate_unit(true).to_string(),
+                        sr.name,
+                        sr.infohash,
+                    );
                 }
             }
         }
