@@ -110,8 +110,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
         },
         Opt::AddDownloadsFromFile { file, destination, anon_hops, no_safe_seeding} => {
             let r : Box<dyn std::io::Read>;
-
-            if format!("{:?}", file) == "-" {
+            
+            if file != std::path::Path::new("-") {
                 r = Box::new(std::fs::File::open(file)?);
             } else {
                 r = Box::new(std::io::stdin());
