@@ -83,6 +83,27 @@ impl TriblerRestApi {
         
         Ok(reply.results)
     }
+
+    /// Returns infohash
+    pub fn add_download(&self, q: AddDownload) -> Result<String> {
+        #[derive(Deserialize)]
+        struct Reply {
+            started: bool,
+            infohash: String,
+        }
+
+        let url = Url::parse(&format!("{}/downloads", &self.baseurl))?;
+
+        let reply : Reply = self.c
+            .put(url)
+            .form(&q)
+            .send()?
+            .json()?;
+
+        ensure!(reply.started, "Download is not started");
+        
+        Ok(reply.infohash)
+    }
 }
 
 /// Information about specific Tribler downloads
@@ -171,6 +192,16 @@ impl SearchQuery {
     }
 }
 
+
+
+#[derive(Debug,Serialize)]
+pub struct AddDownload {
+    pub anon_hops: u32,
+    pub destination: String,
+    pub uri: String,
+    #[serde(serialize_with = "bool2int")]
+    pub safe_seeding: bool,
+}
 
 fn bool2int<S:serde::Serializer>(b:&bool,s:S) -> std::result::Result<S::Ok, S::Error> 
 {

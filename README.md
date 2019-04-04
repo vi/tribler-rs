@@ -2,7 +2,7 @@ Library and a command-line interface for Tribler REST API
 
 (early version)
 
-At the moment it targets Tribler `v7.3.0-beta1`.
+At the moment it targets Tribler `v7.3.0-beta1`. It does not start Tribler Core.
 
 Currently only some commands are implemented:
 
@@ -20,6 +20,10 @@ $ tribler search-complete hel
 helloween
 hellfire
 hellblazer
+
+$ tribler add-download <url> <destrination>
+
+$ echo "magnet:..." | tribler add-downloads-from-file - <destination>
 ```
 
 License = Apache 2.0 or MIT.

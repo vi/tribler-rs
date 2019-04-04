@@ -24,6 +24,33 @@ enum Opt {
         /// Prefix to complete
         prefix: String,
     },
+    /// Add new download
+    AddDownload {
+        /// Magnet link to downoad
+        uri: String,
+        /// Filesytem destination where to save the download
+        destination: String,
+        /// Number of hops for anonymity. 0 = no anonymity, max speed.
+        #[structopt(long="anon-hops", default_value="1")]
+        anon_hops: u32,
+        /// Turn off safe_seeding option
+        #[structopt(long="no-safe-seeding")]
+        no_safe_seeding: bool,
+    },
+    /// Add multiple downloads from text file with links
+    AddDownloadsFromFile {
+        /// A text file with each line having a link.
+        /// Use `-` for stdin.
+        file: std::path::PathBuf,
+        /// Filesytem destination where to save the downloads
+        destination: String,
+        /// Number of hops for anonymity. 0 = no anonymity, max speed.
+        #[structopt(long="anon-hops", default_value="1")]
+        anon_hops: u32,
+        /// Turn off safe_seeding option
+        #[structopt(long="no-safe-seeding")]
+        no_safe_seeding: bool,
+    },
 }
 
 
@@ -69,6 +96,40 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
                     sr.name,
                     sr.infohash,
                 );
+            }
+        },
+        Opt::AddDownload { uri, destination, anon_hops, no_safe_seeding} => {
+            let q = tribler::AddDownload {
+                uri,
+                destination,
+                anon_hops,
+                safe_seeding: !no_safe_seeding,
+            };
+            let ih = trib.add_download(q)?;
+            println!("Download started. Infohash is {}", ih);
+        },
+        Opt::AddDownloadsFromFile { file, destination, anon_hops, no_safe_seeding} => {
+            let r : Box<dyn std::io::Read>;
+
+            if format!("{:?}", file) == "-" {
+                r = Box::new(std::fs::File::open(file)?);
+            } else {
+                r = Box::new(std::io::stdin());
+            }
+            
+            let rr = std::io::BufReader::new(r);
+            use std::io::BufRead;
+            for uri in rr.lines() {
+                let uri = uri?;
+                let destination = destination.clone();
+                let q = tribler::AddDownload {
+                    uri,
+                    destination,
+                    anon_hops,
+                    safe_seeding: !no_safe_seeding,
+                };
+                let ih = trib.add_download(q)?;
+                println!("Download started. Infohash is {}", ih);
             }
         },
     }
